@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025年美妆产品市场调研报告</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f9f7f7;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* 头部样式 */
+        header {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="1" stroke-opacity="0.1"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 25px;
+            opacity: 0.9;
+        }
+        
+        /* 导航样式 */
+        nav {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #ff6b8b;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 30px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            color: #ff6b8b;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #ff6b8b;
+            transition: width 0.3s;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        /* 主要内容样式 */
+        main {
+            padding: 40px 0;
+        }
+        
+        section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: #ff6b8b;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+        
+        h2 i {
+            margin-right: 10px;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(to right, #fff5f7, #fff);
+            border-left: 4px solid #ff6b8b;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .data-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .data-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .data-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #ff6b8b;
+            margin: 10px 0;
+        }
+        
+        .data-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .trend-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .trend-list li {
+            padding: 12px 0;
+            border-bottom: 1px dashed #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .trend-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .trend-list i {
+            color: #ff6b8b;
+            margin-right: 10px;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin: 25px 0;
+            position: relative;
+        }
+        
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th {
+            background-color: #ff6b8b;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        tr:hover {
+            background-color: #fff5f7;
+        }
+        
+        /* 页脚样式 */
+        footer {
+            background-color: #333;
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: 40px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 20px;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 20px;
+            color: #ff6b8b;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #ff6b8b;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            margin-top: 20px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+            }
+            
+            .nav-links {
+                margin-top: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-links li {
+                margin: 5px 15px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            section {
+                padding: 20px;
+            }
+        }
+        
+        /* 打印样式 */
+        @media print {
+            nav, footer {
+                display: none;
+            }
+            
+            section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部区域 -->
+    <header>
+        <div class="container header-content">
+            <h1><i class="fas fa-palette"></i> 2025年美妆产品市场调研报告</h1>
+            <p class="subtitle">基于最新行业数据，深入分析中国美妆市场发展趋势、消费者行为变化及竞争格局</p>
+            <p>调研时间：2025年 | 数据来源：中国香料香精化妆品工业协会、魔镜洞察、新华网等权威机构</p>
+        </div>
+    </header>
+    
+    <!-- 导航栏 -->
+    <nav>
+        <div class="container nav-container">
+            <div class="logo">美妆市场洞察</div>
+            <ul class="nav-links">
+                <li><a href="#overview"><i class="fas fa-chart-line"></i> 市场概况</a></li>
+                <li><a href="#channels"><i class="fas fa-shopping-cart"></i> 渠道分析</a></li>
+                <li><a href="#trends"><i class="fas fa-bullseye"></i> 消费趋势</a></li>
+                <li><a href="#competition"><i class="fas fa-flag"></i> 竞争格局</a></li>
+                <li><a href="#outlook"><i class="fas fa-crystal-ball"></i> 未来展望</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- 主要内容 -->
+    <main class="container">
+        <!-- 市场概况 -->
+        <section id="overview">
+            <h2><i class="fas fa-chart-line"></i> 市场概况</h2>
+            <div class="highlight-box">
+                <p>2025年，中国化妆品市场规模再创新高，全渠道交易额突破1.1万亿元，达11042.45亿元，同比增长2.83%。中国稳居全球第一大化妆品消费市场[11,14,15](@ref)。</p>
+            </div>
+            
+            <div class="data-grid">
+                <div class="data-card">
+                    <div class="data-value">¥1.1万亿</div>
+                    <div class="data-label">全渠道交易额</div>
+                    <p>市场规模首次突破1.1万亿元</p>
+                </div>
+                <div class="data-card">
+                    <div class="data-value">57.37%</div>
+                    <div class="data-label">国货市场份额</div>
+                    <p>国货品牌连续5年增长</p>
+                </div>
+                <div class="data-card">
+                    <div class="data-value">2.83%</div>
+                    <div class="data-label">同比增长率</div>
+                    <p>市场保持稳定增长</p>
+                </div>
+                <div class="data-card">
+                    <div class="data-value">¥785.22</div>
+                    <div class="data-label">人均消费</div>
+                    <p>较2023年持续提升</p>
+                </div>
+            </div>
+            
+            <p>2025年中国化妆品产业正处于关键的转型节点，市场增长引擎已由过去的"总量扩张"转变为"结构优化"，行业正迈向更成熟、更高质量的发展新阶段[15](@ref)。</p>
+        </section>
+        
+        <!-- 渠道分析 -->
+        <section id="channels">
+            <h2><i class="fas fa-shopping-cart"></i> 渠道分析</h2>
+            <p>2025年，化妆品渠道格局深度调整，"线上为主"的单极扩张时代结束，线上线下融合共生的新格局加速形成[1,15](@ref)。</p>
+            
+            <div class="chart-container">
+                <canvas id="channelChart"></canvas>
+            </div>
+            
+            <div class="data-grid">
+                <div class="data-card">
+                    <div class="data-value">¥7217.73亿</div>
+                    <div class="data-label">线上交易额</div>
+                    <p>同比增长4.45%，占比65.36%</p>
+                </div>
+                <div class="data-card">
+                    <div class="data-value">¥3824.72亿</div>
+                    <div class="data-label">线下交易额</div>
+                    <p>同比微降0.08%，占比34.64%</p>
+                </div>
+            </div>
+            
+            <p>线上渠道已从"补充渠道"转变为驱动行业增长的"核心引擎"，但线下渠道向"体验化"与"服务化"转型，通过快闪店与皮肤诊断服务增强互动，客单价显著提升[13](@ref)。</p>
+        </section>
+        
+        <!-- 消费趋势 -->
+        <section id="trends">
+            <h2><i class="fas fa-bullseye"></i> 消费趋势</h2>
+            <p>2025年美妆消费市场呈现鲜明的"大众盘稳固、高端线高增"双向格局，消费分层加速、升级与分级并行[2](@ref)。</p>
+            
+            <ul class="trend-list">
+                <li><i class="fas fa-check-circle"></i> <strong>理性消费驱动</strong>：消费者在理性消费背景下，对功效、体验与确定性价值的关注增强[2](@ref)</li>
+                <li><i class="fas fa-check-circle"></i> <strong>成分党崛起</strong>：72%的消费者认为化妆品功效非常重要，65%的消费者在选择时重视功效数据验证[12](@ref)</li>
+                <li><i class="fas fa-check-circle"></i> <strong>妆养合一趋势</strong>：消费者不再满足于彩妆的即时修饰效果，转而追求"妆养合一"的产品价值[5](@ref)</li>
+                <li><i class="fas fa-check-circle"></i> <strong>情绪价值凸显</strong>：化妆品成为自我表达的重要方式，"原生感""呼吸感"本真美学崛起[6](@ref)</li>
+                <li><i class="fas fa-check-circle"></i> <strong>人群精细化</strong>：男性护肤需求进阶至抗衰老、美白等功效领域，25岁以上年轻群体"抗初老"意识普及[6](@ref)</li>
+            </ul>
+            
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+            
+            <p>消费者正从"被动接受"走向"主动定义"，不再满足于品牌给出的标准答案，而是根据自己的肤质、生活方式和审美偏好，重新组合、重新定义属于自己的解决方案[2,8](@ref)。</p>
+        </section>
+        
+        <!-- 竞争格局 -->
+        <section id="competition">
+            <h2><i class="fas fa-flag"></i> 竞争格局</h2>
+            <p>2025年化妆品行业"马太效应"持续加剧，市场资源加速向头部品牌和科技创新型企业聚集[1,11](@ref)。</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>品牌类型</th>
+                        <th>交易额</th>
+                        <th>市场份额</th>
+                        <th>市场表现</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>国货品牌</strong></td>
+                        <td>2688.63亿元</td>
+                        <td>57.37%</td>
+                        <td>连续5年增长，成为市场主力</td>
+                    </tr>
+                    <tr>
+                        <td>法国品牌</td>
+                        <td>755.41亿元</td>
+                        <td>16.12%</td>
+                        <td>位居第二，面临国货竞争压力</td>
+                    </tr>
+                    <tr>
+                        <td>美国品牌</td>
+                        <td>550.33亿元</td>
+                        <td>11.74%</td>
+                        <td>市场份额有所下滑</td>
+                    </tr>
+                    <tr>
+                        <td>日本品牌</td>
+                        <td>299.31亿元</td>
+                        <td>6.39%</td>
+                        <td>保持稳定，高端线表现良好</td>
+                    </tr>
+                    <tr>
+                        <td>韩国品牌</td>
+                        <td>187.24亿元</td>
+                        <td>4.00%</td>
+                        <td>市场份额持续收缩</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="highlight-box">
+                <p><strong>关键发现：</strong>排名前500的品牌中超60%保持正增长，其中1-50名品牌增长占比达74.00%。而500名以后的品牌增长占比仅约25.96%，尾部品牌生存压力显著[1](@ref)。</p>
+            </div>
+            
+            <p>国际品牌与本土品牌的竞争，已从"品牌力"转向"科学力"与"文化力"的双重博弈。国货品牌如珀莱雅、薇诺娜等通过技术创新和精准定位实现强势突围[13](@ref)。</p>
+        </section>
+        
+        <!-- 未来展望 -->
+        <section id="outlook">
+            <h2><i class="fas fa-crystal-ball"></i> 未来展望</h2>
+            <p>2025年的美妆行业已进入"存量博弈"与"增量创新"并行的新周期，行业经历深度洗牌后的结构性调整[13](@ref)。</p>
+            
+            <div class="data-grid">
+                <div class="data-card">
+                    <div class="data-value">科技抗衰</div>
+                    <div class="data-label">核心趋势</div>
+                    <p>生物技术、AI配方成核心竞争力</p>
+                </div>
+                <div class="data-card">
+                    <div class="data-value">情绪消费</div>
+                    <div class="data-label">增长引擎</div>
+                    <p>香水等品类成为新增长点</p>
+                </div>
+                <div class="data-card">
+                    <div class="data-value">全渠道融合</div>
+                    <div class="data-label">核心变量</div>
+                    <p>线上线下体验融合</p>
+                </div>
+                <div class="data-card">
+                    <div class="data-value">可持续发展</div>
+                    <div class="data-label">战略重点</div>
+                    <p>从营销变为产业链改造</p>
+                </div>
+            </div>
+            
+            <ul class="trend-list">
+                <li><i class="fas fa-arrow-right"></i> <strong>细分市场成为新增长极</strong>：在基础品类增长放缓的背景下，男士护肤、头皮护理等细分领域增速显著[13](@ref)</li>
+                <li><i class="fas fa-arrow-right"></i> <strong>科技赋能个性化服务</strong>：AI皮肤诊断、3D打印定制粉底等技术应用提升客户体验[13](@ref)</li>
+                <li><i class="fas fa-arrow-right"></i> <strong>可持续发展深入产业链</strong>：美妆巨头将可持续理念深入企业运营各个环节[4](@ref)</li>
+                <li><i class="fas fa-arrow-right"></i> <strong>国货品牌价值深化</strong>："十五五"规划强化品牌引领，为国货化妆品品牌价值跃升注入动能[6](@ref)</li>
+            </ul>
+            
+            <div class="highlight-box">
+                <p><strong>结论：</strong>当前行业已从"流量红利"转向"价值深耕"，企业需在消费行为洞察、渠道效率提升和细分市场创新中寻找增长引擎[13](@ref)。</p>
+            </div>
+        </section>
+    </main>
+    
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>美妆市场调研</h3>
+                    <p>本报告基于2025年最新行业数据，全面分析中国美妆市场发展趋势，为行业从业者、投资者和研究者提供参考。</p>
+                </div>
+                <div class="footer-section">
+                    <h3>数据来源</h3>
+                    <ul class="footer-links">
+                        <li>中国香料香精化妆品工业协会</li>
+                        <li>魔镜洞察 & 新华网</li>
+                        <li>国家统计局</li>
+                        <li>艾媒咨询</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>调研团队</h3>
+                    <p>市场分析组：张明、李华、王芳</p>
+                    <p>数据可视化：陈伟</p>
+                    <p>报告撰写：刘洋</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>© 2025 美妆市场调研报告 | 本报告仅供参考，数据来源已标注 | 最后更新：2025年12月</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // 渠道分布图表
+        const channelCtx = document.getElementById('channelChart').getContext('2d');
+        const channelChart = new Chart(channelCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['线上渠道', '线下渠道'],
+                datasets: [{
+                    data: [65.36, 34.64],
+                    backgroundColor: ['#ff6b8b', '#36a2eb'],
+                    borderWidth: 1,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed + '%';
+                                if (context.dataIndex === 0) {
+                                    label += ' (¥7217.73亿)';
+                                } else {
+                                    label += ' (¥3824.72亿)';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 消费趋势图表
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        const trendChart = new Chart(trendCtx, {
+            type: 'bar',
+            data: {
+                labels: ['抗衰抗皱', '美容修饰', '闪亮效果', '男士修饰', '妆养合一'],
+                datasets: [{
+                    label: '增长率 (%)',
+                    data: [26.3, 15.8, 133.4, 43.5, 20.6],
+                    backgroundColor: [
+                        'rgba(255, 107, 139, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 107, 139)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 206, 86)',
+                        'rgb(75, 192, 192)',
+                        'rgb(153, 102, 255)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '增长率 (%)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `增长率: ${context.parsed.y}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 平滑滚动到锚点
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // 添加交互效果：数据卡片点击放大
+        document.querySelectorAll('.data-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.transform = this.style.transform === 'scale(1.05)' ? 'scale(1)' : 'scale(1.05)';
+            });
+        });
+        
+        // 打印功能
+        window.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+        });
+        
+        // 页面加载动画
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s';
+            
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
