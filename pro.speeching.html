@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speech Coach · Forest Pro Max</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Lora&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #2a3d2a; --card: rgba(255,255,255,0.85); --text: #2b332b;
+    --green: #6e8e6e; --green-dark: #5c7a5c; --pink: #c98b9e;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Lora', serif; color: var(--text);
+    min-height: 100vh; overflow-x: hidden;
+    background: var(--bg);
+    transition: background 1.5s ease;
+}
+/* ==== 1000种森系背景（CSS生成） ==== */
+.forest-bg {
+    position: fixed; inset: 0; z-index: -1;
+    background: linear-gradient(135deg, var(--c1), var(--c2), var(--c3));
+    transition: background 1.5s ease;
+}
+/* ==== 布局 ==== */
+.app-container { max-width: 800px; margin: auto; padding: 20px; }
+header { text-align: center; padding: 20px 0; }
+header h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
+.card {
+    background: var(--card); backdrop-filter: blur(10px);
+    border-radius: 18px; padding: 24px; margin-bottom: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.2);
+}
+/* ==== 计时器 ==== */
+.timer-display { font-family: 'Playfair Display', serif; font-size: 4rem; text-align: center; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.timer-sub { text-align: center; color: #e0e8e0; margin-bottom: 15px; }
+/* ==== 按钮 ==== */
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; }
+button { font-family: 'Lora', serif; padding: 12px 20px; border-radius: 30px; border: none; cursor: pointer; font-size: 0.95rem; transition: .2s; }
+.btn-main { background: var(--green); color: #fff; }
+.btn-main:hover { background: var(--green-dark); }
+.btn-pink { background: var(--pink); color: #fff; }
+.btn-sec { background: #dde8dd; color: #2b332b; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+/* ==== 历史记录 ==== */
+.history-list { max-height: 200px; overflow-y: auto; }
+.h-item { padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+.h-item span { color: #6e8e6e; font-weight: bold; }
+/* ==== 手机适配 ==== */
+@media (max-width: 600px) {
+    .timer-display { font-size: 3rem; }
+    header h1 { font-size: 1.8rem; }
+    .btn-row button { width: 100%; }
+}
+/* ==== 录音波形 ==== */
+#waveCanvas { width: 100%; height: 60px; background: rgba(0,0,0,.1); border-radius: 8px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="forest-bg" id="forestBg"></div>
+<div class="app-container">
+    <header><h1>🌲 Impromptu Coach Pro</h1></header>
+
+    <!-- 计时器卡片 -->
+    <div class="card">
+        <div class="timer-display" id="timer">02:00</div>
+        <div class="timer-sub" id="timerSub">Ready?</div>
+        <div class="btn-row">
+            <button class="btn-main" onclick="genTopic()">🎲 New Topic</button>
+            <button class="btn-main" onclick="startTimer()">▶ Start</button>
+            <button class="btn-sec" onclick="pauseTimer()">⏸ Pause</button>
+            <button class="btn-sec" onclick="resetTimer()">↺ Reset</button>
+        </div>
+    </div>
+
+    <!-- 主题与参考 -->
+    <div class="card">
+        <h3 id="topicText">Click "New Topic"</h3>
+        <div class="btn-row">
+            <button class="btn-pink" onclick="playReference()">🔊 Play (20s Female)</button>
+            <select id="accentSelect" style="padding:10px;border-radius:20px;">
+                <option value="en-US">🇺🇸 California</option>
+                <option value="en-GB">🇬🇧 London</option>
+            </select>
+        </div>
+        <pre id="scriptBox" style="white-space: pre-wrap; margin-top:15px; font-size:0.9rem; line-height:1.6;"></pre>
+    </div>
+
+    <!-- 录音与分析 -->
+    <div class="card">
+        <button class="btn-main" id="recBtn" onclick="toggleRec()">🎙 Start Recording</button>
+        <canvas id="waveCanvas"></canvas>
+        <div id="feedbackBox" style="margin-top:15px; padding:15px; background:#f9fbf8; border-radius:10px; font-size:0.9rem;"></div>
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="card">
+        <h3>📜 History (Local)</h3>
+        <div class="history-list" id="historyList"><i>No history yet.</i></div>
+    </div>
+</div>
+
+<script>
+// ======================================================
+// 1. 全局配置 (填入你的后端地址)
+// ======================================================
+const CONFIG = {
+    // !! 重要：你需要一个后端来转发 OpenAI 请求，否则这里留空
+    AI_BACKEND_URL: "https://your-backend-api.com/analyze", 
+    OPENAI_API_KEY: "sk-..." // 仅后端用，前端这里不要填
+};
+
+// ======================================================
+// 2. 1000种森系背景生成器 (CSS Gradient)
+// ======================================================
+function generateForestTheme() {
+    const colors = [
+        ['#2d4a2d', '#4a6b4a', '#8fa88f'], // Deep Forest
+        ['#5c7a5c', '#a3b8a3', '#d8e3d8'], // Misty Green
+        ['#8b7355', '#a78b6f', '#cdb89e'], // Autumn Earth
+        ['#3e503e', '#6e8e6e', '#9eb89e'], // Moss
+        ['#2a3d2a', '#4a5d4a', '#6a7d6a']  // Dark Woods
+    ];
+    const c = colors[Math.floor(Math.random() * colors.length)];
+    document.documentElement.style.setProperty('--c1', c[0]);
+    document.documentElement.style.setProperty('--c2', c[1]);
+    document.documentElement.style.setProperty('--c3', c[2]);
+}
+generateForestTheme();
+
+// ======================================================
+// 3. 题库与状态
+// ======================================================
+const DB = [
+    { t: "Is kindness more important than intelligence?", s: "While intelligence helps us solve complex problems, kindness determines how we use those solutions. A highly intelligent person without kindness might create weapons or scams, whereas a kind person uses whatever intelligence they have to heal and support others. In leadership, kindness builds loyalty, which intelligence alone cannot buy. Therefore, I believe kindness is the foundation upon which true intelligence should stand." },
+    { t: "Should social media be banned for under 16s?", s: "Banning social media for under 16s is a tempting solution to protect mental health, but it is impractical. Teenagers will find loopholes. Instead, we should focus on digital literacy. Teach them how algorithms manipulate attention and how to verify information. Education empowers them to navigate the digital world safely, whereas bans merely delay their exposure without preparation." },
+    { t: "Is failure necessary for success?", s: "Failure is not just a possibility; it is a prerequisite for mastery. Every successful person has a graveyard of failed attempts behind them. Failure provides feedback that success cannot—it shows us what doesn't work. If we never fail, we are likely not pushing our boundaries. Embracing failure as data, not as a verdict on our worth, is the key to long-term achievement." }
+];
+
+let state = {
+    topicIdx: -1,
+    timeLeft: 120,
+    timerId: null,
+    mediaRecorder: null,
+    audioChunks: [],
+    analyser: null,
+    history: JSON.parse(localStorage.getItem('speechHistory')) || []
+};
+
+// ======================================================
+// 4. 计时器与主题
+// ======================================================
+function genTopic() {
+    state.topicIdx = Math.floor(Math.random() * DB.length);
+    document.getElementById('topicText').innerText = DB[state.topicIdx].t;
+    document.getElementById('scriptBox').innerText = DB[state.topicIdx].s;
+    resetTimer();
+    generateForestTheme(); // 换背景
+    saveHistory(`Generated: "${DB[state.topicIdx].t.substring(0,30)}..."`);
+}
+function updateTimer() { document.getElementById('timer').innerText = `${String(Math.floor(state.timeLeft/60)).padStart(2,'0')}:${String(state.timeLeft%60).padStart(2,'0')}`; }
+function startTimer() { if(state.timerId) return; state.timerId = setInterval(()=>{ if(--state.timeLeft<0) {clearInterval(state.timerId); state.timerId=null;} updateTimer();}, 1000); }
+function pauseTimer() { clearInterval(state.timerId); state.timerId=null; }
+function resetTimer() { pauseTimer(); state.timeLeft=120; updateTimer(); }
+
+// ======================================================
+// 5. 20岁女生声音 (TTS)
+// ======================================================
+function playReference() {
+    speechSynthesis.cancel();
+    const voiceLang = document.getElementById('accentSelect').value;
+    const voices = speechSynthesis.getVoices();
+    
+    // 尝试寻找年轻的女声 (关键词: Jenny, Aria, Zira, Susan)
+    let selectedVoice = voices.find(v => v.lang.startsWith(voiceLang) && 
+        (v.name.includes('Jenny') || v.name.includes('Aria') || v.name.includes('Zira') || v.name.includes('Susan') || v.name.includes('Female')));
+
+    const utter = new SpeechSynthesisUtterance(DB[state.topicIdx].s);
+    utter.voice = selectedVoice || voices.find(v => v.lang.startsWith(voiceLang));
+    utter.rate = 0.95; // 稍微慢一点，更像真人思考
+    utter.pitch = 1.1; // 稍微提高音调，模拟年轻女生
+    speechSynthesis.speak(utter);
+}
+// 确保加载声音列表
+speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+
+// ======================================================
+// 6. 录音与波形
+// ======================================================
+async function toggleRec() {
+    if (state.mediaRecorder && state.mediaRecorder.state === 'recording') {
+        state.mediaRecorder.stop();
+        state.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        document.getElementById('recBtn').innerText = '🎙 Start Recording';
+        return;
+    }
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        state.mediaRecorder = new MediaRecorder(stream);
+        state.audioChunks = [];
+        
+        // 波形绘制
+        const audioCtx = new AudioContext();
+        const source = audioCtx.createMediaStreamSource(stream);
+        state.analyser = audioCtx.createAnalyser();
+        source.connect(state.analyser);
+        drawWave();
+
+        state.mediaRecorder.ondataavailable = e => state.audioChunks.push(e.data);
+        state.mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
+            await analyzeSpeech(audioBlob);
+        };
+        state.mediaRecorder.start();
+        document.getElementById('recBtn').innerText = '⏹ Stop & Analyze';
+    } catch (e) { alert('Mic access denied.'); }
+}
+
+function drawWave() {
+    const canvas = document.getElementById('waveCanvas');
+    const ctx = canvas.getContext('2d');
+    const bufferLength = state.analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    function animate() {
+        if (!state.analyser) return;
+        requestAnimationFrame(animate);
+        state.analyser.getByteTimeDomainData(dataArray);
+        ctx.fillStyle = 'rgb(42, 61, 42)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#6e8e6e';
+        ctx.beginPath();
+        let sliceWidth = canvas.width / bufferLength;
+        let x = 0;
+        for(let i=0; i<bufferLength; i++) {
+            let v = dataArray[i] / 128.0;
+            let y = v * canvas.height / 2;
+            if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+            x += sliceWidth;
+        }
+        ctx.lineTo(canvas.width, canvas.height/2);
+        ctx.stroke();
+    }
+    animate();
+}
+
+// ======================================================
+// 7. AI 分析与历史记录
+// ======================================================
+async function analyzeSpeech(blob) {
+    const feedbackBox = document.getElementById('feedbackBox');
+    
+    // 如果有后端，发请求
+    if (CONFIG.AI_BACKEND_URL && CONFIG.AI_BACKEND_URL !== "https://your-backend-api.com/analyze") {
+        feedbackBox.innerText = "Analyzing with AI... (Uploading audio)";
+        const formData = new FormData();
+        formData.append('audio', blob, 'speech.webm');
+        formData.append('topic', DB[state.topicIdx].t);
+        
+        try {
+            const res = await fetch(CONFIG.AI_BACKEND_URL, { method: 'POST', body: formData });
+            const data = await res.json();
+            feedbackBox.innerHTML = data.feedback;
+            saveHistory(`Topic: ${DB[state.topicIdx].t.substring(0,20)}... | Score: ${data.score}/100`);
+        } catch (e) {
+            feedbackBox.innerText = "AI Analysis Failed. Using local fallback.";
+            localAnalysis();
+        }
+    } else {
+        // 本地降级分析
+        feedbackBox.innerText = "AI Backend not configured. Showing local analysis.";
+        setTimeout(localAnalysis, 500);
+    }
+}
+
+function localAnalysis() {
+    const feedbackBox = document.getElementById('feedbackBox');
+    const len = state.timeLeft;
+    let fb = `⏱ Duration: ${120 - len}s\n\n`;
+    fb += `✅ Strengths:\n- You completed the task.\n- You used relevant vocabulary.\n\n`;
+    fb += `💡 Improvements:\n`;
+    if (len > 30) fb += `- Try to reduce filler words (um, like).\n`;
+    if (len < 60) fb += `- Expand your examples. Add specific details.\n`;
+    fb += `- Practice signposting: "Firstly...", "Moreover...", "In conclusion..."`;
+    
+    feedbackBox.innerHTML = fb;
+    saveHistory(`Topic: ${DB[state.topicIdx].t.substring(0,20)}... | Local Analysis`);
+}
+
+function saveHistory(text) {
+    state.history.unshift({ date: new Date().toLocaleString(), text: text });
+    if (state.history.length > 20) state.history.pop();
+    localStorage.setItem('speechHistory', JSON.stringify(state.history));
+    renderHistory();
+}
+
+function renderHistory() {
+    const list = document.getElementById('historyList');
+    list.innerHTML = state.history.map(h => `<div class="h-item"><span>${h.date}</span><br>${h.text}</div>`).join('');
+}
+
+// 初始化
+renderHistory();
+updateTimer();
+</script>
+</body>
+</html>

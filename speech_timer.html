@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Impromptu Speech · Forest Timer</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Lora&display=swap" rel="stylesheet">
+
+<style>
+/* ===== 英式森系风格 ===== */
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Lora', serif;
+    background: 
+        url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80")
+        no-repeat center/cover fixed;
+    color: #2b2b2b;
+}
+
+/* 毛玻璃卡片 */
+.card {
+    max-width: 720px;
+    margin: 60px auto;
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(10px);
+    border-radius: 18px;
+    padding: 40px 36px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+}
+
+h1 {
+    font-family: 'Playfair Display', serif;
+    text-align: center;
+    font-size: 2.4rem;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    font-style: italic;
+    color: #4a604a;
+    margin-bottom: 30px;
+}
+
+/* 主题展示 */
+.topic-box {
+    background: #f6f9f6;
+    border-left: 6px solid #7c9d7c;
+    padding: 22px 24px;
+    border-radius: 10px;
+    font-size: 1.25rem;
+    line-height: 1.6;
+    min-height: 90px;
+}
+
+/* 计时器 */
+.timer {
+    font-family: 'Playfair Display', serif;
+    font-size: 4.4rem;
+    text-align: center;
+    margin: 30px 0;
+    letter-spacing: 4px;
+}
+
+/* 按钮 */
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+button {
+    font-family: 'Lora', serif;
+    font-size: 1rem;
+    padding: 12px 26px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-primary {
+    background: #7c9d7c;
+    color: #fff;
+}
+
+.btn-secondary {
+    background: #d8e3d8;
+    color: #2b2b2b;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    opacity: 0.92;
+}
+
+footer {
+    text-align: center;
+    margin-top: 28px;
+    font-size: 0.9rem;
+    color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>Impromptu Speech</h1>
+    <div class="subtitle">A quiet corner in the forest to practise your voice</div>
+
+    <!-- 演讲主题 -->
+    <div class="topic-box" id="topic">
+        Click below to receive your topic 🌿
+    </div>
+
+    <!-- 计时器 -->
+    <div class="timer" id="timer">02:00</div>
+
+    <!-- 控制按钮 -->
+    <div class="buttons">
+        <button class="btn-primary" onclick="newTopic()">New Topic</button>
+        <button class="btn-primary" onclick="startTimer()">Start</button>
+        <button class="btn-secondary" onclick="pauseTimer()">Pause</button>
+        <button class="btn-secondary" onclick="resetTimer()">Reset</button>
+    </div>
+
+    <footer>
+        Designed for English majors · British Forest Style
+    </footer>
+</div>
+
+<script>
+/* ===== 即兴演讲题库 ===== */
+const topics = [
+    "Is it better to be kind than to be clever?",
+    "Should universities abolish grades?",
+    "Can nature teach us more than books?",
+    "Is failure a necessary part of success?",
+    "Should art be useful or beautiful?",
+    "Does technology bring us closer or push us apart?",
+    "Is silence more powerful than words?",
+    "Should everyone learn a musical instrument?",
+    "Is it better to know a little about everything than much about one thing?",
+    "Can money buy happiness?",
+    "Should we fear aging or welcome it?",
+    "Is home a place or a feeling?",
+    "Do we learn more from victory or defeat?",
+    "Should all countries adopt a four-day work week?",
+    "Is honesty always the best policy?"
+];
+
+/* ===== 主题随机生成 ===== */
+function newTopic() {
+    const t = topics[Math.floor(Math.random() * topics.length)];
+    document.getElementById("topic").innerText = t;
+    resetTimer();
+}
+
+/* ===== 计时器逻辑 ===== */
+let totalSeconds = 120;
+let timerID = null;
+
+function updateDisplay() {
+    const m = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+    const s = String(totalSeconds % 60).padStart(2, "0");
+    document.getElementById("timer").innerText = `${m}:${s}`;
+}
+
+function startTimer() {
+    if (timerID) return;
+    timerID = setInterval(() => {
+        if (totalSeconds <= 0) {
+            clearInterval(timerID);
+            timerID = null;
+            document.getElementById("timer").innerText = "Time’s up 🌙";
+            return;
+        }
+        totalSeconds--;
+        updateDisplay();
+    }, 1000);
+}
+
+function pauseTimer() {
+    clearInterval(timerID);
+    timerID = null;
+}
+
+function resetTimer() {
+    pauseTimer();
+    totalSeconds = 120;
+    updateDisplay();
+}
+
+updateDisplay();
+</script>
+
+</body>
+</html>

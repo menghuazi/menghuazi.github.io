@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌲 Global Speech & Debate Coach</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Lora&display=swap" rel="stylesheet">
+<style>
+:root { --card-bg: rgba(255,255,255,0.88); --primary: #6e8e6e; --accent: #8b7355; }
+* { box-sizing: border-box; }
+body { font-family: 'Lora', serif; margin: 0; min-height: 100vh; color: #333; background: #2a3d2a; transition: background-image 1.5s ease; background-size: cover; background-position: center; }
+.container { max-width: 820px; margin: auto; padding: 20px; backdrop-filter: blur(8px); background: rgba(0,0,0,0.15); min-height: 100vh; }
+.card { background: var(--card-bg); border-radius: 18px; padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+h1 { font-family: 'Playfair Display', serif; text-align: center; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
+.mode-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 15px 0; }
+.mode-btn { padding: 10px 16px; border-radius: 20px; border: 2px solid #fff; background: transparent; color: #fff; cursor: pointer; font-weight: bold; }
+.mode-btn.active { background: #fff; color: #2a3d2a; }
+input, select, button { font-family: inherit; padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
+button.main { background: var(--primary); color: #fff; border: none; cursor: pointer; }
+button.main:hover { opacity: 0.9; }
+.timer { font-family: 'Playfair Display', serif; font-size: 4rem; text-align: center; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
+#topicArea { font-size: 1.2rem; line-height: 1.6; margin: 15px 0; padding: 15px; background: #f4f8f3; border-radius: 10px; }
+#feedback { white-space: pre-wrap; background: #f9fbf8; padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.9rem; }
+.role-select { display: flex; gap: 10px; margin-top: 10px; }
+.role-btn { flex: 1; padding: 10px; border: 2px solid var(--primary); background: #fff; color: var(--primary); cursor: pointer; text-align: center; border-radius: 8px; }
+.role-btn.selected { background: var(--primary); color: #fff; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Global Speech & Debate Coach</h1>
+
+    <!-- Mode Selection -->
+    <div class="card">
+        <h3>1. Select Mode & Duration</h3>
+        <div class="mode-bar" id="modeBar"></div>
+        <label>Duration: <input type="number" id="durationInput" value="2" min="1" max="10" style="width:60px;"> minutes</label>
+    </div>
+
+    <!-- Main Stage -->
+    <div class="card">
+        <div class="timer" id="timer">02:00</div>
+        <div id="topicArea">Click "Generate Topic" to start.</div>
+        
+        <!-- Debate Role Selection (Hidden by default) -->
+        <div id="debateRoles" style="display:none;">
+            <p><b>Choose your stance:</b></p>
+            <div class="role-select">
+                <div class="role-btn" data-role="pro">👍 Pro (Affirmative)</div>
+                <div class="role-btn" data-role="con">👎 Con (Negative)</div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:15px; flex-wrap: wrap;">
+            <button class="main" onclick="genTopic()" style="flex:1;">🎲 Generate Topic</button>
+            <button class="main" onclick="startTimer()" style="flex:1;">▶ Start</button>
+            <button onclick="pauseTimer()" style="flex:1;">⏸ Pause</button>
+        </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="card">
+        <h3>2. Analysis & Suggestions</h3>
+        <div id="feedback">Waiting for your performance...</div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURATION
+// ============================================================
+const MODES = {
+    'impromptu': { name: 'Impromptu', time: 2, prep: 15 },
+    'ielts': { name: 'IELTS', time: 2, prep: 60 },
+    'bec': { name: 'BEC', time: 1, prep: 30 },
+    'toefl': { name: 'TOEFL', time: 1, prep: 15 },
+    'debate': { name: 'Debate', time: 4, prep: 120 }
+};
+
+const TOPICS = {
+    timeless: [
+        "Should artificial intelligence replace human teachers?",
+        "Is working from home the future of employment?",
+        "Are universities worth the money?",
+        "Should governments ban single-use plastics?",
+        "Is social media making us more isolated?"
+    ],
+    trending: [ // Updated for 2024-2025 context
+        "Should companies enforce a 4-day work week?",
+        "Is 'quiet quitting' a legitimate response to burnout?",
+        "Should there be a global tax on carbon emissions?",
+        "Is the rise of influencer culture harmful to young people?",
+        "Should remote workers be paid less than office workers?"
+    ],
+    debate: [
+        { q: "Social media does more harm than good.", pro: "It spreads misinformation and addiction.", con: "It connects people and democratizes information." },
+        { q: "Governments should provide universal basic income.", pro: "It reduces poverty and supports automation transition.", con: "It discourages work and inflates economy." },
+        { q: "Space exploration funding should be increased.", pro: "It drives technological innovation.", con: "Resources should solve Earth's problems first." }
+    ]
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+    mode: 'impromptu',
+    duration: 120,
+    timeLeft: 120,
+    timerId: null,
+    topic: '',
+    role: 'pro'
+};
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+    const modeBar = document.getElementById('modeBar');
+    Object.keys(MODES).forEach(key => {
+        const btn = document.createElement('button');
+        btn.className = 'mode-btn' + (key === state.mode ? ' active' : '');
+        btn.innerText = MODES[key].name;
+        btn.onclick = () => switchMode(key);
+        modeBar.appendChild(btn);
+    });
+    changeBackground();
+    updateTimerDisplay();
+}
+
+function switchMode(modeKey) {
+    state.mode = modeKey;
+    const config = MODES[modeKey];
+    state.duration = config.time * 60;
+    state.timeLeft = state.duration;
+    
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    document.getElementById('durationInput').value = config.time;
+    document.getElementById('debateRoles').style.display = (modeKey === 'debate') ? 'block' : 'none';
+    
+    updateTimerDisplay();
+    changeBackground();
+}
+
+// ============================================================
+// BACKGROUND (Unsplash Random Nature)
+// ============================================================
+function changeBackground() {
+    // Using Unsplash Source for simplicity (no API key needed)
+    const categories = ['nature', 'forest', 'minimal', 'sky', 'water'];
+    const cat = categories[Math.floor(Math.random() * categories.length)];
+    document.body.style.backgroundImage = `url('https://source.unsplash.com/1600x900/?${cat},scenic,light')`;
+}
+
+// ============================================================
+// TOPIC GENERATION
+// ============================================================
+function genTopic() {
+    let topicData;
+    if (state.mode === 'debate') {
+        topicData = TOPICS.debate[Math.floor(Math.random() * TOPICS.debate.length)];
+        state.topic = topicData.q;
+        document.getElementById('topicArea').innerHTML = `<b>Motion:</b> ${topicData.q}<br><br><i>Pro Argument: ${topicData.pro}<br><br>Con Argument: ${topicData.con}</i>`;
+    } else {
+        const pool = [...TOPICS.timeless, ...TOPICS.trending];
+        state.topic = pool[Math.floor(Math.random() * pool.length)];
+        document.getElementById('topicArea').innerText = state.topic;
+    }
+    changeBackground();
+    document.getElementById('feedback').innerText = "Topic generated. Prepare your arguments!";
+}
+
+// ============================================================
+// DEBATE ROLE
+// ============================================================
+document.querySelectorAll('.role-btn').forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        state.role = btn.dataset.role;
+    };
+});
+
+// ============================================================
+// TIMER
+// ============================================================
+function updateTimerDisplay() {
+    const m = String(Math.floor(state.timeLeft / 60)).padStart(2, '0');
+    const s = String(state.timeLeft % 60).padStart(2, '0');
+    document.getElementById('timer').innerText = `${m}:${s}`;
+}
+
+function startTimer() {
+    if (state.timerId) return;
+    state.timerId = setInterval(() => {
+        state.timeLeft--;
+        updateTimerDisplay();
+        if (state.timeLeft <= 0) {
+            clearInterval(state.timerId);
+            state.timerId = null;
+            finishPractice();
+        }
+    }, 1000);
+}
+
+function pauseTimer() {
+    clearInterval(state.timerId);
+    state.timerId = null;
+}
+
+// ============================================================
+// FINISH & FEEDBACK
+// ============================================================
+function finishPractice() {
+    let feedback = `📊 Mode: ${MODES[state.mode].name.toUpperCase()}\n`;
+    feedback += `⏱ Time Used: ${Math.floor((state.duration - state.timeLeft)/60)}m ${((state.duration - state.timeLeft)%60)}s\n\n`;
+    
+    if (state.mode === 'debate') {
+        const opponent = state.role === 'pro' ? 'Con' : 'Pro';
+        feedback += `🤖 System Rebuttal (${opponent} side):\n`;
+        feedback += `Your opponent argues that ${state.role === 'pro' ? 'it prevents harm' : 'it is necessary'}. \n\n`;
+        feedback += `💡 Suggestions:\n- Did you address the opponent's strongest point?\n- Use signposting: "I concede that..., however..."\n- Focus on impact (why your side matters more).`;
+    } else if (state.mode === 'ielts') {
+        feedback += `📝 IELTS Criteria Check:\n- Fluency: Were you hesitant?\n- Lexical: Did you use collocations (e.g., "robust system" not just "strong system")?\n- Grammar: Mix of simple and complex sentences?\n- Pronunciation: Intonation clear?`;
+    } else if (state.mode === 'bec') {
+        feedback += `💼 BEC Business Focus:\n- Tone: Professional and objective?\n- Vocabulary: Used terms like "stakeholders", "bottom line", "KPIs"?\n- Structure: Clear opening, body, closing?`;
+    } else {
+        feedback += `✅ General Tips:\n- Structure: Claim -> Reason -> Example -> Conclusion.\n- Avoid fillers: "um", "like", "you know".\n- Eye contact (with camera): Engage your listener.`;
+    }
+    
+    document.getElementById('feedback').innerText = feedback;
+}
+
+// Init
+init();
+</script>
+</body>
+</html>
